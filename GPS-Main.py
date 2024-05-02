@@ -6,16 +6,8 @@ import GPSUtil
 nodes = []
 
 
-# Prompt the user to start tracking
-start_tracking = input("Start tracking? (y/n): ")
 
-# Check if the user wants to start tracking
-if start_tracking.lower() == "y":
-    Tracking = True
-else:
-    Tracking = False
-
-while Tracking == True:
+while True:
     #get the current location of the GPS module
     lat, lng = GPSUtil.get_gps_readout()
 

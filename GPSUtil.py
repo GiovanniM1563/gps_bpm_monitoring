@@ -2,6 +2,8 @@ import serial
 import time 
 import folium
 import osmnx as ox
+import geopy
+from geopy.geocoders import Nominatim
 
 def get_gps_readout():
     gps = serial.Serial("COM4", baudrate = 9600)
@@ -53,6 +55,19 @@ def get_node(latitude, longitude):
     node = ox.nearest_nodes(graph, longitude, latitude)
     return node
 
+def get_nearest_nodes(location_history):
+    nearest_nodes = []
+    for index, row in location_history.iterrows():
+        node = get_node(row['LATITUDE'], row['LONGITUDE'])
+        nearest_nodes.append(node)
+    return nearest_nodes
+
+def get_address(latitude, longitude):
+    geolocator = Nominatim(user_agent="gps_bpm_monitoring")
+    location = geolocator.reverse((latitude, longitude))
+    address = location.address
+    return address
+
 def generate_route(nodes):
     # create a graph from OSM within the boundaries of some geocodable place(s)
     place = 'Fullerton, California, United States'
@@ -67,7 +82,6 @@ def generate_route(nodes):
 
     # create a map viewable in HTML of the route
     route_map = ox.plot_route_folium(graph, shortest_route)
-    route_map.save('route.html')
 
     # convert node ids to latitude and longitude
     list_of_x = [graph.nodes[node]['x'] for node in shortest_route]
