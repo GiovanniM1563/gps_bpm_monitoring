@@ -4,42 +4,57 @@ import folium
 import osmnx as ox
 import geopy
 from geopy.geocoders import Nominatim
+import serial
+import time
 
-def get_gps_readout():
-    #com04 if windows
-    gps = serial.Serial("/dev/ttyACM0", baudrate = 9600)
-    line = gps.readline()
-    data = line.decode().split(",")
-    if data[0] == "$GPRMC":
-        if data[2] == "A":
-            curr_lat_nmea = data[3]
-            curr_lat_deg = curr_lat_nmea[:2]
-            if data[4] =='S':
-                lat = float(curr_lat_deg) * -1
-            else:
-                lat = float(curr_lat_deg)
-                lat = str(lat).strip('.')
-                lat_ddd = curr_lat_nmea[2:10]
-                lat_mmm = float(lat_ddd) / 60
-                lat_mmm = str(lat_mmm).strip('0.')[:8]
-                lat_final = lat + lat_mmm
+def get_gps_readout(timeout=10):
+    start_time = time.time()  # Record the start time
+    try:
+        # Open serial connection
+        with serial.Serial("COM3", baudrate=9600) as gps:
+            # Set timeout for readline method
+            gps.timeout = timeout
+            # Read data from serial port
+            line = gps.readline().decode().strip()
+            while time.time() - start_time < timeout:
+                if line.startswith("$GPRMC"):
+                    data = line.split(",")
+                    if data[2] == "A":
+                        curr_lat_nmea = data[3]
+                        curr_lat_deg = curr_lat_nmea[:2]
+                        if data[4] == 'S':
+                            lat = float(curr_lat_deg) * -1
+                        else:
+                            lat = float(curr_lat_deg)
+                        lat_ddd = curr_lat_nmea[2:10]
+                        lat_mmm = float(lat_ddd) / 60
+                        lat_final = round(lat + lat_mmm, 6)
+
+                        curr_long_nmea = data[5]
+                        curr_long_deg = curr_long_nmea[0:3]
+                        if data[6] == 'W':
+                            long = float(curr_long_deg) * -1
+                        else:
+                            long = float(curr_long_deg)
+                        long_ddd = curr_long_nmea[3:10]
+                        long_mmm = float(long_ddd) / 60
+                        long_final = round(long + long_mmm, 6)
+
+                        print("Latitude:", lat_final)
+                        print("Longitude:", long_final)
+                        return lat_final, long_final
+                    else:
+                        line = gps.readline().decode().strip()  # Read next line
+    except serial.SerialException as e:
+        print("Serial communication error:", e)
+    except Exception as e:
+        print("Error:", e)
+    
+    # Return None if no GPS data is available or timeout occurs
+    print("No GPS data received within {} seconds".format(timeout))
+    return None, None
 
 
-
-                curr_long_nmea = data[5]
-                curr_long_deg = curr_long_nmea[0:3]
-                if data[6] == 'W':
-                    long = float(curr_long_deg) * -1
-                else:
-                    long = float(curr_long_deg)
-                long = str(long).strip('.0')
-                long_ddd = curr_long_nmea[3:10]
-                long_mmm = float(long_ddd) / 60
-                long_mmm = str(long_mmm).strip('0.')[:9]
-                long_final = long + "." + long_mmm
-
-                print( lat_final, long_final)
-                return lat_final,long_final
             
 def create_map_marker(lat, lng, tooltip):
     m = folium.Map(location=[lat, lng], zoom_start=9, tiles="Stamen Terrain")
