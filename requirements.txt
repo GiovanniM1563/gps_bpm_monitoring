@@ -1,0 +1,7 @@
+folium==0.16.0
+geopy==2.4.1
+networkx==3.3
+osmnx==1.9.3
+pandas==2.2.2
+pyserial==3.5
+streamlit==1.33.0

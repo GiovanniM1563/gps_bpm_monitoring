@@ -6,7 +6,8 @@ import geopy
 from geopy.geocoders import Nominatim
 
 def get_gps_readout():
-    gps = serial.Serial("COM4", baudrate = 9600)
+    #com04 if windows
+    gps = serial.Serial("/dev/ttyACM0", baudrate = 9600)
     line = gps.readline()
     data = line.decode().split(",")
     if data[0] == "$GPRMC":

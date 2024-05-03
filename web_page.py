@@ -4,6 +4,7 @@ import GPSUtil as gps
 import osmnx as ox
 import time
 import folium
+import serial as bpm
 #from bpm_read import bpm_reading
 
 def webpage():
@@ -43,10 +44,10 @@ def webpage():
     asset = current_location_map
 
     # Get the BPM reading
-    BPM = "placeholder"
+    BPM = bpm.get_reading()
 
     # if three have passed
-    if time.time() - st.session_state.start_time >= 180:
+    if time.time() - st.session_state.start_time >= 10:
         location_history = location_history.append(display_df, ignore_index=True)
         st.session_state.start_time = time.time()
 
@@ -73,8 +74,6 @@ def webpage():
 
     # Display the map
     st.components.v1.html(asset.render(), width=800, height=600)
-    st.dataframe(location_history)
-
     # if st.button is clicked, generate route
     if st.button("Show Route"):
         nodes = gps.get_nearest_nodes(location_history)
@@ -83,6 +82,13 @@ def webpage():
 
     if st.button("Show Current Location"):
         asset = current_location_map
+
+
+
+
+    st.dataframe(location_history)
+
+
 
 
 
