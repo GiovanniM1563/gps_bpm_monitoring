@@ -95,6 +95,6 @@ else:
     else:
         st.write("No BPM data available in the database.")
 
-time.sleep(15)
+time.sleep(60)
 
 st.rerun()
