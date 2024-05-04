@@ -58,7 +58,6 @@ async def test_gps_readout(gps_table):
         print("Longitude:", cur_long)
     else:
         print("GPS readout is not available")
-    await asyncio.sleep(1)  # Adjust sleep time as needed
 
 # Function to test BPM readout
 async def test_bpm_readout(bpm_table):
@@ -68,13 +67,14 @@ async def test_bpm_readout(bpm_table):
         print("BPM:", bpm_readout)
     else:
         print("BPM readout is not available")
-    await asyncio.sleep(1)  # Adjust sleep time as needed
+# Create GPS and BPM databases
+gps_table = create_gps_database('gps_data.db')
+bpm_table = create_bpm_database('bpm_data.db')
+
 
 # Main function
 def main():
-    # Create GPS and BPM databases
-    gps_table = create_gps_database('gps_data.db')
-    bpm_table = create_bpm_database('bpm_data.db')
+
 
     # Run asyncio event loop in the main thread
     asyncio.run(test_gps_readout(gps_table))
