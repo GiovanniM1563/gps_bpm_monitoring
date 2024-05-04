@@ -49,36 +49,38 @@ def get_latest_bpm_data(con):
 
 # Function to test GPS readout
 async def test_gps_readout(gps_table):
-    gps_readout = GPSUtil.get_gps_readout()
-    if gps_readout:
-        cur_lat, cur_long = gps_readout
-        time_now = datetime.datetime.now()
-        add_new_row_gps(gps_table, cur_lat, cur_long, time_now)
-        print("Latitude:", cur_lat)
-        print("Longitude:", cur_long)
-    else:
-        print("GPS readout is not available")
+    while True:
+        gps_readout = GPSUtil.get_gps_readout()
+        if gps_readout:
+            cur_lat, cur_long = gps_readout
+            time_now = datetime.datetime.now()
+            add_new_row_gps(gps_table, cur_lat, cur_long, time_now)
+            print("Latitude:", cur_lat)
+            print("Longitude:", cur_long)
+        else:
+            print("GPS readout is not available")
+        await asyncio.sleep(30)  # Adjust sleep time as needed
 
 # Function to test BPM readout
 async def test_bpm_readout(bpm_table):
-    bpm_readout = transfer.get_reading()
-    if bpm_readout and bpm_readout != "1":
-        add_new_row_bpm(bpm_table, bpm_readout)
-        print("BPM:", bpm_readout)
-    else:
-        print("BPM readout is not available")
-# Create GPS and BPM databases
-gps_table = create_gps_database('gps_data.db')
-bpm_table = create_bpm_database('bpm_data.db')
-
+    while True:
+        bpm_readout = transfer.get_reading()
+        if bpm_readout and bpm_readout != "1":
+            add_new_row_bpm(bpm_table, bpm_readout)
+            print("BPM:", bpm_readout)
+        else:
+            print("BPM readout is not available")
+        await asyncio.sleep(30)  # Adjust sleep time as needed
 
 # Main function
-def main():
+async def main():
+    # Create GPS and BPM databases
+    gps_table = create_gps_database('gps_data.db')
+    bpm_table = create_bpm_database('bpm_data.db')
 
-
-    # Run asyncio event loop in the main thread
-    asyncio.run(test_gps_readout(gps_table))
-    asyncio.run(test_bpm_readout(bpm_table))
+    # Run asyncio tasks in the background
+    asyncio.create_task(test_gps_readout(gps_table))
+    asyncio.create_task(test_bpm_readout(bpm_table))
 
     # Title for the page
     st.title("Real-time Data Collection")
@@ -132,7 +134,7 @@ def main():
         st.map(df)
 
     # Countdown timer
-    for i in range(15, -1, -1):
+    for i in range(60, -1, -1):
         countdown_placeholder.write(f"Updates in: {i} seconds")
         time.sleep(1)
 
@@ -140,4 +142,4 @@ def main():
     st.experimental_rerun()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
