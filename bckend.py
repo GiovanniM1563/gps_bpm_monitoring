@@ -62,38 +62,52 @@ gps_table = create_gps_database('gps_data.db')
 bpm_table = create_bpm_database('bpm_data.db')
 
 test_gps_readout()
-st.title("Real-time GPS Data Collection")
-latest_gps_data = get_latest_gps_data(gps_table)
-if latest_gps_data:
-    st.write("Most recent GPS data:")
-    st.write("Latitude:", latest_gps_data[0])
-    st.write("Longitude:", latest_gps_data[1])
-    st.write("Time:", latest_gps_data[2])
-else:
-    st.write("No GPS data available. Fetching most recent from the database.")
-    latest_gps_data_db = get_latest_gps_data(gps_table)
-    if latest_gps_data_db:
-        st.write("Most recent GPS data from database:")
-        st.write("Latitude:", latest_gps_data_db[0])
-        st.write("Longitude:", latest_gps_data_db[1])
-        st.write("Time:", latest_gps_data_db[2])
-    else:
-        st.write("No GPS data available in the database.")
-
 test_bpm_readout()
-st.title("Real-time BPM Data Collection")
-latest_bpm_data = get_latest_bpm_data(bpm_table)
-if latest_bpm_data:
-    st.write("Most recent BPM data:")
-    st.write("BPM:", latest_bpm_data[0])
-else:
-    st.write("No BPM data available. Fetching most recent from the database.")
-    latest_bpm_data_db = get_latest_bpm_data(bpm_table)
-    if latest_bpm_data_db:
-        st.write("Most recent BPM data from database:")
-        st.write("BPM:", latest_bpm_data_db[0])
+
+st.title("Real-time Data Collection")
+
+# Create a layout with two columns
+col1, col2 = st.columns(2)
+
+# Display GPS data in the first column
+with col1:
+    st.title("GPS Data")
+    latest_gps_data = get_latest_gps_data(gps_table)
+    if latest_gps_data:
+        st.write("Most recent GPS data:")
+        st.write("Latitude:", latest_gps_data[0])
+        st.write("Longitude:", latest_gps_data[1])
+        st.write("Time:", latest_gps_data[2])
     else:
-        st.write("No BPM data available in the database.")
+        st.write("No GPS data available. Fetching most recent from the database.")
+        latest_gps_data_db = get_latest_gps_data(gps_table)
+        if latest_gps_data_db:
+            st.write("Most recent GPS data from database:")
+            st.write("Latitude:", latest_gps_data_db[0])
+            st.write("Longitude:", latest_gps_data_db[1])
+            st.write("Time:", latest_gps_data_db[2])
+        else:
+            st.write("No GPS data available in the database.")
+
+# Display BPM data in the second column
+with col2:
+    st.title("BPM Data")
+    latest_bpm_data = get_latest_bpm_data(bpm_table)
+    if latest_bpm_data:
+        st.write("Most recent BPM data:")
+        st.write("BPM:", latest_bpm_data[0])
+    else:
+        st.write("No BPM data available. Fetching most recent from the database.")
+        latest_bpm_data_db = get_latest_bpm_data(bpm_table)
+        if latest_bpm_data_db:
+            st.write("Most recent BPM data from database:")
+            st.write("BPM:", latest_bpm_data_db[0])
+        else:
+            st.write("No BPM data available in the database.")
+
+st.map(data = latest_gps_data, zoom = 9)
+
+
 
 time.sleep(15)
 
