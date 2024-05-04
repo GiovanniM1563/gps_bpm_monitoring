@@ -11,7 +11,7 @@ def get_gps_readout(timeout=10):
     start_time = time.time()  # Record the start time
     try:
         # Open serial connection
-        with serial.Serial("COM3", baudrate=9600) as gps:
+        with serial.Serial("COM6", baudrate=9600) as gps:
             # Set timeout for readline method
             gps.timeout = timeout
             # Read data from serial port
@@ -52,7 +52,6 @@ def get_gps_readout(timeout=10):
     
     # Return None if no GPS data is available or timeout occurs
     print("No GPS data received within {} seconds".format(timeout))
-    return None, None
 
 
             
