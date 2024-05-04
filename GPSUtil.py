@@ -7,7 +7,7 @@ from geopy.geocoders import Nominatim
 import serial
 import time
 
-def get_gps_readout(timeout=10):
+def get_gps_readout(timeout=1):
     start_time = time.time()  # Record the start time
     try:
         # Open serial connection
@@ -52,8 +52,6 @@ def get_gps_readout(timeout=10):
     
     # Return None if no GPS data is available or timeout occurs
     print("No GPS data received within {} seconds".format(timeout))
-
-
             
 def create_map_marker(lat, lng, tooltip):
     m = folium.Map(location=[lat, lng], zoom_start=9, tiles="Stamen Terrain")
