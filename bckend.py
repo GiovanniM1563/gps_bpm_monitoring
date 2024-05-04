@@ -1,5 +1,6 @@
 import streamlit as st
 import sqlite3
+import pandas as pd
 import datetime
 import GPSUtil
 import transfer
@@ -8,7 +9,7 @@ import time
 def create_gps_database(db_name):
     con = sqlite3.connect(db_name)
     cur = con.cursor()
-    cur.execute('CREATE TABLE IF NOT EXISTS gps_data(lat TEXT, long TEXT, time TIMESTAMP)')
+    cur.execute('CREATE TABLE IF NOT EXISTS gps_data(lat REAL, long REAL, time TIMESTAMP)')
     con.commit()
     return con
 
@@ -76,7 +77,9 @@ with col1:
     if latest_gps_data:
         st.write("Most recent GPS data:")
         st.write("Latitude:", latest_gps_data[0])
+        lat = latest_gps_data[0]
         st.write("Longitude:", latest_gps_data[1])
+        long = latest_gps_data[1]
         st.write("Time:", latest_gps_data[2])
     else:
         st.write("No GPS data available. Fetching most recent from the database.")
@@ -84,7 +87,9 @@ with col1:
         if latest_gps_data_db:
             st.write("Most recent GPS data from database:")
             st.write("Latitude:", latest_gps_data_db[0])
+            lat = latest_gps_data_db[0]
             st.write("Longitude:", latest_gps_data_db[1])
+            long = latest_gps_data_db[1]
             st.write("Time:", latest_gps_data_db[2])
         else:
             st.write("No GPS data available in the database.")
@@ -105,10 +110,15 @@ with col2:
         else:
             st.write("No BPM data available in the database.")
 
-st.map(data = latest_gps_data, zoom = 9)
-
+# Create a DataFrame with the most recent latitude and longitude
+if latest_gps_data:
+    lat = float(lat)
+    long = float(long)
+    df = pd.DataFrame({'latitude': [lat], 'longitude': [long]})
+    st.title("Map")
+    st.map(df)
 
 
 time.sleep(60)
 
-st.rerun()
+st.experimental_rerun()
