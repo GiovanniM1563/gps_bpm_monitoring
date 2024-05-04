@@ -109,6 +109,6 @@ st.map(data = latest_gps_data, zoom = 9)
 
 
 
-time.sleep(15)
+time.sleep(60)
 
 st.rerun()
