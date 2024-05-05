@@ -6,6 +6,8 @@ import GPSUtil
 import transfer
 import time
 import asyncio
+import folium
+from streamlit_folium import folium_static
 
 # Function to create GPS database
 def create_gps_database(db_name):
@@ -47,6 +49,18 @@ def get_latest_bpm_data(con):
     cur.execute('SELECT * FROM bpm_data WHERE bpm IS NOT NULL ORDER BY ROWID DESC LIMIT 1')
     return cur.fetchone()
 
+# Function to fetch all GPS data
+def fetch_gps_data(con):
+    cur = con.cursor()
+    cur.execute('SELECT * FROM gps_data')
+    return cur.fetchall()
+
+# Function to fetch all BPM data
+def fetch_bpm_data(con):
+    cur = con.cursor()
+    cur.execute('SELECT * FROM bpm_data')
+    return cur.fetchall()
+
 # Function to test GPS readout
 async def test_gps_readout(gps_table):
     while True:
@@ -55,8 +69,6 @@ async def test_gps_readout(gps_table):
             cur_lat, cur_long = gps_readout
             time_now = datetime.datetime.now()
             add_new_row_gps(gps_table, cur_lat, cur_long, time_now)
-            print("Latitude:", cur_lat)
-            print("Longitude:", cur_long)
         else:
             print("GPS readout is not available")
         await asyncio.sleep(30)  # Adjust sleep time as needed
@@ -67,7 +79,6 @@ async def test_bpm_readout(bpm_table):
         bpm_readout = transfer.get_reading()
         if bpm_readout and bpm_readout != "1":
             add_new_row_bpm(bpm_table, bpm_readout)
-            print("BPM:", bpm_readout)
         else:
             print("BPM readout is not available")
         await asyncio.sleep(30)  # Adjust sleep time as needed
@@ -83,7 +94,7 @@ async def main():
     asyncio.create_task(test_bpm_readout(bpm_table))
 
     # Title for the page
-    st.title("Real-time Data Collection")
+    st.title("Patient Monitoring System")
 
     # Create a layout with two columns
     col1, col2 = st.columns(2)
@@ -98,7 +109,6 @@ async def main():
             st.write("Longitude:", latest_gps_data[1])
             st.write("Time:", latest_gps_data[2])
         else:
-            st.write("No GPS data available. Fetching most recent from the database.")
             latest_gps_data_db = get_latest_gps_data(gps_table)
             if latest_gps_data_db:
                 st.write("Most recent GPS data from database:")
@@ -124,22 +134,35 @@ async def main():
             else:
                 st.write("No BPM data available in the database.")
 
-    # Create a DataFrame with the most recent latitude and longitude
+    # Create a Folium map with the most recent latitude and longitude
     if latest_gps_data:
         lat = float(latest_gps_data[0])
         long = float(latest_gps_data[1])
-        df = pd.DataFrame({'latitude': [lat], 'longitude': [long]})
+        m = folium.Map(location=[lat, long], zoom_start=15)
+        folium.Marker([lat, long]).add_to(m)
         st.title("Map")
         countdown_placeholder = st.empty()
-        st.map(df)
+        folium_static(m)
+
+    # Display GPS and BPM data as a DataFrame under the map
+    with st.expander("History"):
+        gps_data = fetch_gps_data(gps_table)
+        bpm_data = fetch_bpm_data(bpm_table)
+        if gps_data and bpm_data:
+            gps_df = pd.DataFrame(gps_data, columns=["Latitude", "Longitude", "Time"])
+            bpm_df = pd.DataFrame(bpm_data, columns=["BPM"])
+            combined_df = pd.concat([gps_df, bpm_df], axis=1)
+            st.write(combined_df)
+        else:
+            st.write("No data available in the database.")
 
     # Countdown timer
-    for i in range(60, -1, -1):
+    for i in range(30, -1, -1):
         countdown_placeholder.write(f"Updates in: {i} seconds")
         time.sleep(1)
 
     # Rerun the script
-    st.experimental_rerun()
+    st.rerun()
 
 if __name__ == "__main__":
     asyncio.run(main())

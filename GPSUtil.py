@@ -11,7 +11,7 @@ def get_gps_readout(timeout=1):
     start_time = time.time()  # Record the start time
     try:
         # Open serial connection
-        with serial.Serial("COM6", baudrate=9600) as gps:
+        with serial.Serial("COM7", baudrate=9600) as gps:
             # Set timeout for readline method
             gps.timeout = timeout
             # Read data from serial port
@@ -76,10 +76,14 @@ def get_nearest_nodes(location_history):
     return nearest_nodes
 
 def get_address(latitude, longitude):
-    geolocator = Nominatim(user_agent="gps_bpm_monitoring")
-    location = geolocator.reverse((latitude, longitude))
-    address = location.address
-    return address
+    try:
+        geolocator = Nominatim(user_agent="gps_bpm_monitoring")
+        location = geolocator.reverse((latitude, longitude))
+        address = location.address
+        return address
+    except Exception as e:
+        print(f"Error getting address: {e}")
+        return None
 
 def generate_route(nodes):
     # create a graph from OSM within the boundaries of some geocodable place(s)
